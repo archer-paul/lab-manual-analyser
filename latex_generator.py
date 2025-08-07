@@ -100,7 +100,7 @@ class LatexSynthesisGenerator:
 \documentclass[10pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[margin=1.8cm]{geometry}
-\usepackage{xcolor}
+\usepackage[table,xcdraw]{xcolor}
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{fancyhdr}
@@ -130,7 +130,7 @@ class LatexSynthesisGenerator:
 \titleformat{\section}{\large\bfseries\color{medblue}}{\thesection}{1em}{}
 \titleformat{\subsection}{\normalsize\bfseries\color{medgreen}}{\thesubsection}{1em}{}
 
-\title{\textcolor{medblue}{\Large\textbf{FICHE TECHNIQUE MÉDICALE EXHAUSTIVE}} \\ \vspace{0.3cm} \textcolor{medblue}{\large """ + self.escape_latex_advanced(manual_name[:70]) + r"""}}
+\title{\textcolor{medblue}{\Large\textbf{FICHE TECHNIQUE}} \\ \vspace{0.3cm} \textcolor{medblue}{\large """ + self.escape_latex_advanced(manual_name[:70]) + r"""}}
 \author{}
 \date{\today}
 
@@ -154,7 +154,7 @@ Respecter impérativement les procédures du manuel complet}}
         # 1. Résumé exécutif COMPLET
         if synthesis.get("resume_executif"):
             latex_body += r"""
-\section*{RÉSUMÉ TECHNIQUE EXHAUSTIF}
+\section*{RÉSUMÉ}
 \colorbox{lightblue}{\parbox{0.98\textwidth}{""" + self.escape_latex_advanced(synthesis["resume_executif"]) + r"""}}
 
 \vspace{0.5cm}
@@ -253,7 +253,7 @@ Toujours vérifier les procédures critiques dans le manuel complet.}}
     def generate_exhaustive_procedures_section(self, procedures: List[Dict]) -> str:
         """Section procédures d'analyse EXHAUSTIVE avec toutes les informations"""
         section = r"""
-\section*{PROCÉDURES D'ANALYSE MÉDICALES DÉTAILLÉES}
+\section*{PROCÉDURES D'ANALYSE MÉDICALES}
 
 """
         
@@ -293,7 +293,7 @@ Toujours vérifier les procédures critiques dans le manuel complet.}}
                         section += f"\\item {self.escape_latex_advanced(str(step)[:150])}\n"
                     section += "\\end{enumerate}\n"
                 
-                # Conditions de stockage/stabilité DÉTAILLÉES
+                # Conditions de stockage/stabilité
                 if preparation.get('stabilite'):
                     section += f"\\textbf{{Stabilité:}} {self.escape_latex_advanced(str(preparation['stabilite'])[:200])}\n\n"
                 if preparation.get('stockage'):
@@ -301,11 +301,11 @@ Toujours vérifier les procédures critiques dans le manuel complet.}}
             
             section += "\\vspace{0.3cm}\n"
             
-            # Procédure analytique EXHAUSTIVE
+            # Procédure analytique
             procedure_ana = proc.get('procedure_analytique', {})
             if procedure_ana and isinstance(procedure_ana, dict):
                 if procedure_ana.get('workflow'):
-                    section += "\\textbf{\\textcolor{medgreen}{PROCÉDURE ANALYTIQUE DÉTAILLÉE:}}\n"
+                    section += "\\textbf{\\textcolor{medgreen}{PROCÉDURE ANALYTIQUE:}}\n"
                     section += "\\begin{enumerate}[leftmargin=1cm]\n"
                     for j, step in enumerate(procedure_ana['workflow'][:10]):  # Max 10 étapes
                         section += f"\\item {self.escape_latex_advanced(str(step)[:180])}\n"
@@ -318,11 +318,11 @@ Toujours vérifier les procédures critiques dans le manuel complet.}}
             
             section += "\\vspace{0.3cm}\n"
             
-            # Performance analytique (CRITIQUE) DÉTAILLÉE
+            # Performance analytique (CRITIQUE)
             performance = proc.get('performance_analytique', {})
             if performance and isinstance(performance, dict):
                 section += "\\colorbox{lightorange}{\\parbox{0.98\\textwidth}{\n"
-                section += "\\textbf{\\textcolor{medorange}{PERFORMANCE ANALYTIQUE DÉTAILLÉE:}} \\\\\n"
+                section += "\\textbf{\\textcolor{medorange}{PERFORMANCE ANALYTIQUE:}} \\\\\n"
                 
                 for field, label in [
                     ('gamme_mesure', 'Gamme mesure'), ('limite_detection', 'Limite détection'),
@@ -336,11 +336,11 @@ Toujours vérifier les procédures critiques dans le manuel complet.}}
             
             section += "\\vspace{0.3cm}\n"
             
-            # Contrôles qualité COMPLETS
+            # Contrôles qualité
             controles = proc.get('controles_qualite', {})
             if controles and isinstance(controles, dict):
                 if controles.get('types_controles'):
-                    section += "\\textbf{\\textcolor{medblue}{CONTRÔLES QUALITÉ DÉTAILLÉS:}}\n"
+                    section += "\\textbf{\\textcolor{medblue}{CONTRÔLES QUALITÉ:}}\n"
                     section += "\\begin{itemize}[leftmargin=1cm]\n"
                     for ctrl in controles['types_controles'][:6]:
                         section += f"\\item {self.escape_latex_advanced(str(ctrl)[:120])}\n"
@@ -350,17 +350,17 @@ Toujours vérifier les procédures critiques dans le manuel complet.}}
             
             section += "\\vspace{0.3cm}\n"
             
-            # Précautions critiques (SÉCURITÉ) EXHAUSTIVES
+            # Précautions critiques (SÉCURITÉ)
             if proc.get('precautions_critiques'):
                 section += "\\begin{center}\n"
                 section += "\\colorbox{lightred}{\\parbox{0.95\\textwidth}{\n"
-                section += "\\textbf{\\textcolor{medred}{⚠️ PRÉCAUTIONS CRITIQUES DE SÉCURITÉ:}} \\\\\n"
+                section += "\\textbf{\\textcolor{medred}{⚠️ PRÉCAUTIONS CRITIQUES:}} \\\\\n"
                 for j, prec in enumerate(proc['precautions_critiques'][:5]):
                     section += f"\\textbf{{{j+1}.}} {self.escape_latex_advanced(str(prec)[:150])} \\\\\n"
                 section += "}}\n"
                 section += "\\end{center}\n\n"
             
-            # Interprétation clinique DÉTAILLÉE
+            # Interprétation clinique
             interpretation = proc.get('interpretation_clinique', {})
             if interpretation and isinstance(interpretation, dict):
                 section += "\\textbf{\\textcolor{medblue}{INTERPRÉTATION CLINIQUE:}}\n"
@@ -388,10 +388,10 @@ Toujours vérifier les procédures critiques dans le manuel complet.}}
             return ""
         
         section = r"""
-\section*{MAINTENANCE PRÉVENTIVE DÉTAILLÉE}
+\section*{MAINTENANCE PRÉVENTIVE}
 
 \colorbox{lightorange}{\parbox{0.98\textwidth}{
-\textbf{\textcolor{medorange}{IMPORTANCE CRITIQUE:}} La maintenance préventive est essentielle pour garantir la fiabilité diagnostique, la sécurité des analyses et la validité des résultats cliniques.}}
+\textbf{\textcolor{medorange}{IMPORTANCE CRITIQUE:}} La maintenance préventive est essentielle pour garantir la fiabilité diagnostique, la sécurité des analyses et la validité des résultats.}}
 
 \vspace{0.3cm}
 
@@ -452,7 +452,7 @@ Toujours vérifier les procédures critiques dans le manuel complet.}}
     def generate_daily_usage_section(self, guide: Dict) -> str:
         """Section guide d'utilisation quotidienne EXHAUSTIF"""
         section = r"""
-\section*{GUIDE D'UTILISATION QUOTIDIENNE DÉTAILLÉ}
+\section*{GUIDE D'UTILISATION QUOTIDIENNE}
 
 """
         
