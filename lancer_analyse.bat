@@ -1,4 +1,5 @@
 @echo off
+setlocal EnableDelayedExpansion
 REM Script de lancement simple pour Lab Manual Analyzer
 REM Double-cliquez sur ce fichier pour lancer l'analyse
 
@@ -47,9 +48,11 @@ if not exist "manuels" (
 
 REM Compter les fichiers PDF
 set pdf_count=0
-for %%f in (manuels\*.pdf) do set /a pdf_count+=1
+for %%f in (manuels\*.pdf) do (
+    set /a pdf_count+=1
+)
 
-if %pdf_count%==0 (
+if !pdf_count!==0 (
     echo.
     echo AUCUN FICHIER PDF TROUVE dans le dossier manuels\
     echo.
@@ -62,7 +65,7 @@ if %pdf_count%==0 (
     exit /b 0
 )
 
-echo Fichiers PDF detectes: %pdf_count%
+echo Fichiers PDF detectes: !pdf_count!
 echo.
 
 REM Test rapide de la configuration
@@ -89,6 +92,7 @@ REM Menu de selection
 echo Que souhaitez-vous analyser ?
 echo.
 
+REM Lister les fichiers avec numerotation correcte
 set file_num=0
 for %%f in (manuels\*.pdf) do (
     set /a file_num+=1
@@ -98,19 +102,24 @@ for %%f in (manuels\*.pdf) do (
 
 echo.
 set /a all_option=!file_num!+1
-echo   %all_option%. TOUS LES FICHIERS
+echo   !all_option!. TOUS LES FICHIERS
 echo.
 
-set /p choice="Entrez votre choix (1-%all_option%): "
+set /p choice="Entrez votre choix (1-!all_option!): "
 
 REM Verification du choix
-set "valid_choice=false"
-for /l %%i in (1,1,%all_option%) do (
-    if "!choice!"=="%%i" set "valid_choice=true"
+if "!choice!"=="" (
+    echo Choix vide.
+    pause
+    exit /b 1
 )
 
+REM Verifier si c'est un nombre valide
+set "valid_choice=false"
+if !choice! gtr 0 if !choice! leq !all_option! set "valid_choice=true"
+
 if "!valid_choice!"=="false" (
-    echo Choix invalide.
+    echo Choix invalide. Entrez un nombre entre 1 et !all_option!
     pause
     exit /b 1
 )
@@ -122,7 +131,7 @@ echo ===============================================
 echo.
 
 REM Execution basee sur le choix
-if "!choice!"=="%all_option%" (
+if !choice! equ !all_option! (
     echo Analyse de TOUS les fichiers PDF...
     echo.
     
@@ -132,7 +141,7 @@ if "!choice!"=="%all_option%" (
     for %%f in (manuels\*.pdf) do (
         set /a analysis_count+=1
         echo.
-        echo [!analysis_count!/%pdf_count%] Analyse de: %%~nf
+        echo [!analysis_count!/!pdf_count!] Analyse de: %%~nf
         echo ----------------------------------------
         
         python lab_manual_analyzer_organized.py "%%f"
@@ -162,8 +171,13 @@ if "!choice!"=="%all_option%" (
     
 ) else (
     REM Analyse d'un fichier specifique
-    setlocal enabledelayedexpansion
     set "selected_file=!file%choice%!"
+    
+    if "!selected_file!"=="" (
+        echo Erreur: fichier non trouve
+        pause
+        exit /b 1
+    )
     
     echo Analyse de: !selected_file!
     echo.
@@ -180,7 +194,9 @@ if "!choice!"=="%all_option%" (
         echo manuels\syntheses\
         echo.
         echo Fichiers generes:
-        for %%f in (manuels\syntheses\*) do echo   - %%~nxf
+        if exist "manuels\syntheses\*" (
+            for %%f in (manuels\syntheses\*) do echo   - %%~nxf
+        )
     ) else (
         echo.
         echo ===============================================
