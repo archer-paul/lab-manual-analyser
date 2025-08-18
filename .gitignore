@@ -57,17 +57,33 @@ venv.bak/
 
 # Google Cloud credentials and config
 credentials/
+service-account.json
+**/credentials/
+**/service-account*.json
+
+# Sensitive configuration files
+config.json
+config_old.json
+service-url.txt
+*.env
+*.env.local
+*.env.production
+*.env.staging
+.env*
+
+# API keys and secrets
+**/api-keys.json
+**/secrets.json
+**/tokens.json
+
+# Exclude all JSON files by default, then whitelist safe ones
 *.json
 !package.json
 !package-lock.json
 !components.json
 !firebase.json
 !tsconfig*.json
-
-# Sensitive configuration
-config.json
-config_old.json
-service-url.txt
+!**/ui/*.json
 
 # PDF files and analysis results
 manuels/
@@ -93,6 +109,11 @@ Icon?
 
 # Batch files and scripts (potentially containing sensitive info)
 *.bat
+deploy.ps1
+lancer_analyse.bat
+
+# PowerShell scripts that might contain credentials
+*.ps1
 
 # LaTeX temporary files
 *.aux
