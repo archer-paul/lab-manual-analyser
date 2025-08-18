@@ -1,0 +1,11 @@
+{
+  "projects": {
+    "default": "manual-miner-research"
+  },
+  "targets": {
+    "manual-miner-research": {
+      "hosting": {}
+    }
+  },
+  "etags": {}
+}

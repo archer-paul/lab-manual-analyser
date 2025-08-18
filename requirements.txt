@@ -1,6 +1,32 @@
-google-cloud-documentai==2.25.0
-google-generativeai==0.7.2
-google-auth==2.29.0
-google-auth-oauthlib==1.2.0
-google-auth-httplib2==0.2.0
-pathlib2==2.3.7
+# ManualMiner Backend Requirements
+# Core web framework
+Flask==2.3.3
+Flask-CORS==4.0.0
+gunicorn==21.2.0
+
+# Google Cloud services
+google-cloud-documentai==2.20.1
+google-cloud-storage==2.10.0
+google-generativeai==0.3.2
+
+# Authentication for Google Cloud
+google-auth==2.23.3
+google-auth-oauthlib==1.0.0
+google-auth-httplib2==0.1.1
+
+# PDF processing - versions spécifiques pour compatibilité
+PyPDF2==3.0.1
+pypdf==3.17.4
+pdf2image==1.16.3
+
+# Data handling
+pandas==2.0.3
+numpy==1.24.3
+
+# Utilities
+python-dotenv==1.0.0
+
+# LaTeX (system packages needed via Dockerfile)
+# texlive-latex-base
+# texlive-latex-extra
+# texlive-fonts-recommended
