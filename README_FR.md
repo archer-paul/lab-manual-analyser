@@ -1,5 +1,6 @@
 # ManualMiner
 
+**🌐 [Essayer ManualMiner en ligne](https://manual-miner-research.web.app/)**  
 **[English version of README](README.md)**
 
 Système d'analyse automatisé pour les manuels d'appareils médicaux utilisant Google Cloud Document AI et Gemini AI. ManualMiner extrait les procédures, protocoles de maintenance, spécifications techniques et consignes de sécurité des manuels PDF pour générer des documents de synthèse complets.
