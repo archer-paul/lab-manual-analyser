@@ -6,11 +6,73 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+lab_analysis.log
 
 node_modules
 dist
 dist-ssr
+build
 *.local
+
+# Build outputs and binaries
+*.exe
+*.app
+*.deb
+*.rpm
+*.dmg
+*.pkg
+*.msi
+
+# Vite build cache
+.vite/
+vite.config.*.timestamp-*
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Bundler outputs
+*.bundle.*
+*.chunk.*
+*.min.js
+*.min.css
+
+# Static build outputs
+out/
+build/
+.next/
+.nuxt/
+.output/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Google Cloud credentials and config
+credentials/
+*.json
+!package.json
+!package-lock.json
+!components.json
+!firebase.json
+!tsconfig*.json
+
+# Sensitive configuration
+config.json
+config_old.json
+service-url.txt
+
+# PDF files and analysis results
+manuels/
+temp/
+manualminer-backend/
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +84,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# OS generated files
+Thumbs.db
+.DS_Store?
+ehthumbs.db
+Icon?
+
+# Batch files and scripts (potentially containing sensitive info)
+*.bat
+
+# LaTeX temporary files
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz

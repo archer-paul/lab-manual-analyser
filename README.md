@@ -16,12 +16,12 @@ An automated analysis system for medical device manuals using Google Cloud Docum
 
 The system identifies and extracts:
 
-- **General Information**: Instrument name, manufacturer, model, applications
-- **Analysis Procedures**: Step-by-step protocols with materials and precautions
+- **General Information**: Device name, manufacturer, model, applications
+- **Operating Procedures**: Step-by-step protocols with materials and precautions
 - **Preventive Maintenance**: Schedules, procedures, and verification points
 - **Technical Specifications**: Performance parameters and environmental requirements
 - **Safety Guidelines**: Risk assessments and protective measures
-- **Calibration Procedures**: Quality control and standard requirements
+- **Quality Control**: Calibration procedures and validation requirements
 
 ## Prerequisites
 
@@ -43,8 +43,8 @@ The system identifies and extracts:
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/lab-manual-analyzer.git
-cd lab-manual-analyzer
+git clone https://github.com/yourusername/manualminer.git
+cd manualminer
 ```
 
 2. **Install dependencies**
@@ -68,12 +68,30 @@ python test_config.py
 
 ## Quick Start
 
+### Backend (Python Analysis)
+
 1. **Place PDF manuals** in the `manuels/` directory
 2. **Run analysis**:
 ```bash
 python lab_manual_analyzer_organized.py manuels/your_manual.pdf
 ```
 3. **Find results** in `manuels/syntheses/`
+
+### Web Interface
+
+1. **Install dependencies**:
+```bash
+npm install
+```
+
+2. **Start development server**:
+```bash
+npm run dev
+```
+
+3. **Open browser** and navigate to `http://localhost:5173`
+
+4. **Upload PDF** through the web interface and monitor real-time analysis progress
 
 ## Configuration
 
@@ -108,6 +126,29 @@ manuels/
     └── your_manual_ANALYSE_COMPLETE.json  # Detailed analysis
 ```
 
+## Web Application Architecture
+
+ManualMiner includes a modern React-based web interface that provides:
+
+### Frontend Features
+- **Drag & Drop Upload**: Modern file upload interface with progress tracking
+- **Real-time Processing**: Live streaming of analysis progress via Server-Sent Events
+- **Interactive Console**: Real-time log display with color-coded status messages
+- **PDF Preview**: Built-in preview functionality for generated synthesis documents
+- **Responsive Design**: Mobile-friendly interface built with Tailwind CSS and shadcn/ui
+
+### Backend Integration
+- **Cloud Run Deployment**: Python backend deployed on Google Cloud Run for scalability
+- **Streaming API**: Real-time communication between frontend and backend
+- **File Management**: Automatic handling of uploads, processing, and downloads
+- **Error Handling**: Comprehensive error reporting and recovery mechanisms
+
+### Technology Stack
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS, shadcn/ui components
+- **Backend**: Python, Flask, Google Cloud Run
+- **AI Services**: Google Document AI, Gemini AI
+- **PDF Processing**: LaTeX compilation for professional document generation
+
 ## Advanced Usage
 
 ### Batch Processing
@@ -123,14 +164,28 @@ done
 python lab_manual_analyzer_organized.py manual.pdf --config custom_config.json
 ```
 
+### Production Deployment
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
 ## Technical Details
 
 ### Document Processing Pipeline
+
 1. **PDF Preparation**: Automatic decryption if password-protected
-2. **Intelligent Chunking**: Splits large documents (>15 pages) for API limits
-3. **OCR Extraction**: Uses Document AI for robust text extraction
-4. **AI Analysis**: Gemini AI identifies and structures information
-5. **Synthesis Generation**: Creates professional PDF and JSON outputs
+2. **Intelligent Chunking**: Splits large documents into manageable segments (≤15 pages) to respect API limits
+3. **OCR Extraction**: Uses Google Cloud Document AI for robust text extraction with high accuracy
+4. **AI-Powered Analysis**: Gemini AI processes extracted text to identify and structure relevant information
+5. **JSON Validation**: Two-stage validation process:
+   - Classical format validation using standard JSON parsing
+   - Content validation through dedicated Gemini AI call
+6. **LaTeX Conversion**: Transforms validated JSON data into professional LaTeX format
+7. **PDF Compilation**: Generates final synthesis document through LaTeX compilation
 
 ### API Limits and Costs
 - **Document AI**: 15 pages per request, ~$1 per 1000 pages
@@ -173,8 +228,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 If you use this tool in academic research, please cite:
 
 ```
-Lab Manual Analyzer: Automated Analysis of Laboratory Instrument Documentation
-[Your details here]
+ManualMiner: Automated Analysis of Medical Device Documentation
+Paul Archer, Henri Mondor Hospital
 ```
 
 ## Acknowledgments
