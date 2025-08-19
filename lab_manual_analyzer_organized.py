@@ -330,13 +330,23 @@ class LabManualAnalyzerStrict:
                     logger.error(error_msg)
                     raise RuntimeError(error_msg)
     
-    def analyze_with_gemini_advanced(self, chunk: Dict, context: str = "") -> Dict:
-        """Analyse Gemini AVANCÉE avec modèle intelligent et double validation"""
+    def analyze_with_gemini_advanced(self, chunk: Dict, context: str = "", language: str = 'fr') -> Dict:
+        """Analyse Gemini AVANCÉE avec modèle intelligent et double validation et support multilingue"""
+        
+        # Instructions de langue pour le prompt
+        language_instruction = {
+            'fr': "IMPORTANT: Réponds EXCLUSIVEMENT en français avec tous les textes, descriptions et valeurs en français.",
+            'en': "IMPORTANT: Respond EXCLUSIVELY in English with all texts, descriptions and values in English."
+        }
+        
+        lang_inst = language_instruction.get(language, language_instruction['fr'])
         
         # Prompt détaillé pour extraction maximale d'informations
         detailed_prompt = f"""
 Tu es un expert médical spécialisé dans l'analyse d'instruments de laboratoire diagnostique.
 Analyse EXHAUSTIVEMENT ce manuel médical et extrait TOUTES les informations techniques et cliniques critiques.
+
+{lang_inst}
 
 CONTEXTE PRÉCÉDENT: {context[-300:] if context else "Début du document"}
 
@@ -736,7 +746,7 @@ Réponds UNIQUEMENT avec le JSON corrigé, sans explanation, sans markdown."""
         
         return result
     
-    def synthesize_final_medical(self, analyses: List[Dict]) -> Dict:
+    def synthesize_final_medical(self, analyses: List[Dict], language: str = 'fr') -> Dict:
         """Synthèse finale EXHAUSTIVE avec double validation JSON"""
         if not analyses:
             raise ValueError("❌ Aucune analyse à synthétiser")
@@ -791,8 +801,18 @@ Réponds UNIQUEMENT avec le JSON corrigé, sans explanation, sans markdown."""
         logger.info(f"   - Troubleshooting: {len(all_troubleshooting)}")
         
         # Synthèse finale EXHAUSTIVE avec Gemini + double validation
+        # Instructions de langue pour le prompt
+        logger.info(f"DEBUG: About to use language variable: {language}")
+        language_instruction = {
+            'fr': "IMPORTANT: Réponds EXCLUSIVEMENT en français avec tous les textes, descriptions et valeurs en français.",
+            'en': "IMPORTANT: Respond EXCLUSIVELY in English with all texts, descriptions and values in English."
+        }
+        lang_inst = language_instruction.get(language, language_instruction['fr'])
+        logger.info(f"DEBUG: Language instruction set to: {lang_inst[:50]}...")
         synthesis_prompt = f"""
 Tu es un expert médical diagnostique. Créer une synthèse TECHNIQUE COMPLÈTE de cet instrument médical.
+
+{lang_inst}
 
 INFORMATIONS INSTRUMENT CONSOLIDÉES:
 {json.dumps(instrument_info, ensure_ascii=False, indent=2)}
@@ -1169,9 +1189,9 @@ EXIGENCE ABSOLUE: JSON PARFAITEMENT VALIDE. Consolide EXHAUSTIVEMENT toutes les 
         
         return chunks
     
-    def analyze_manual_organized(self, pdf_path: Path) -> Dict:
-        """Analyse complète stricte d'un manuel médical avec extraction exhaustive"""
-        logger.info(f"🏥 DÉBUT ANALYSE MÉDICALE EXHAUSTIVE: {pdf_path.name}")
+    def analyze_manual_organized(self, pdf_path: Path, language: str = 'fr') -> Dict:
+        """Analyse complète stricte d'un manuel médical avec extraction exhaustive et support multilingue"""
+        logger.info(f"🏥 DÉBUT ANALYSE MÉDICALE EXHAUSTIVE: {pdf_path.name} (Language: {language})")
         
         pdf_chunks = []
         prepared_pdf = None
@@ -1217,7 +1237,7 @@ EXIGENCE ABSOLUE: JSON PARFAITEMENT VALIDE. Consolide EXHAUSTIVEMENT toutes les 
             for i, chunk in enumerate(analysis_chunks):
                 logger.info(f"🧠 Analyse Gemini EXHAUSTIVE {i+1}/{len(analysis_chunks)}: {chunk['description']}")
                 
-                analysis = self.analyze_with_gemini_advanced(chunk, context)  # Version avancée avec double validation
+                analysis = self.analyze_with_gemini_advanced(chunk, context, language)  # Version avancée avec double validation
                 chunk_analyses.append(analysis)
                 
                 # Contexte enrichi pour chunk suivant
@@ -1232,14 +1252,14 @@ EXIGENCE ABSOLUE: JSON PARFAITEMENT VALIDE. Consolide EXHAUSTIVEMENT toutes les 
             
             # 7. Synthèse finale médicale EXHAUSTIVE
             logger.info("🔬 Création de la synthèse médicale EXHAUSTIVE...")
-            synthesis = self.synthesize_final_medical(chunk_analyses)
+            synthesis = self.synthesize_final_medical(chunk_analyses, language)
             
             # 8. Génération du PDF LaTeX PROFESSIONNEL avec données complètes
             output_pdf = self.syntheses_dir / f"{pdf_path.stem}_SYNTHESE_MEDICALE_COMPLETE.pdf"
             
             logger.info("📄 Génération du PDF médical professionnel...")
             pdf_success = self.latex_generator.generate_latex_synthesis(
-                synthesis, output_pdf, f"MANUEL MÉDICAL COMPLET - {pdf_path.stem}"
+                synthesis, output_pdf, f"MANUEL MÉDICAL COMPLET - {pdf_path.stem}", language
             )
             
             if not pdf_success:

@@ -3,6 +3,7 @@ import { Terminal, Download, Eye } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useTranslation } from 'react-i18next'
 
 interface LogEntry {
   timestamp: string
@@ -19,6 +20,7 @@ interface LogConsoleProps {
 }
 
 export function LogConsole({ logs, isProcessing, onDownload, onPreview, showActions }: LogConsoleProps) {
+  const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -43,11 +45,11 @@ export function LogConsole({ logs, isProcessing, onDownload, onPreview, showActi
   const getLevelPrefix = (level: LogEntry['level']) => {
     switch (level) {
       case 'error':
-        return '[ERREUR]'
+        return '[ERROR]'
       case 'warning':
-        return '[ATTENTION]'
+        return '[WARNING]'
       case 'success':
-        return '[SUCCÈS]'
+        return '[SUCCESS]'
       default:
         return '[INFO]'
     }
@@ -59,7 +61,7 @@ export function LogConsole({ logs, isProcessing, onDownload, onPreview, showActi
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Terminal className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold text-foreground">Console d'analyse</h3>
+            <h3 className="font-semibold text-foreground">{t('console.title')}</h3>
           </div>
           {showActions && (
             <div className="flex space-x-2">
@@ -70,7 +72,7 @@ export function LogConsole({ logs, isProcessing, onDownload, onPreview, showActi
                 disabled={isProcessing}
               >
                 <Eye className="w-4 h-4 mr-2" />
-                Aperçu
+                {t('results.preview')}
               </Button>
               <Button
                 variant="default"
@@ -80,7 +82,7 @@ export function LogConsole({ logs, isProcessing, onDownload, onPreview, showActi
                 className="bg-gradient-primary hover:opacity-90"
               >
                 <Download className="w-4 h-4 mr-2" />
-                Télécharger
+                {t('results.download')}
               </Button>
             </div>
           )}
@@ -91,7 +93,7 @@ export function LogConsole({ logs, isProcessing, onDownload, onPreview, showActi
         <div ref={scrollRef} className="space-y-2 font-mono text-sm">
           {logs.length === 0 ? (
             <div className="text-muted-foreground italic">
-              En attente du fichier...
+              {t('console.noLogs')}
             </div>
           ) : (
             logs.map((log, index) => (
@@ -118,7 +120,7 @@ export function LogConsole({ logs, isProcessing, onDownload, onPreview, showActi
                 [ANALYSE]
               </span>
               <span className="text-primary">
-                Traitement en cours...
+                {t('console.processing')}
               </span>
             </div>
           )}

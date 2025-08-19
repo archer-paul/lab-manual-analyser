@@ -47,35 +47,110 @@ class ManualMinerAPI:
             return True
             
         try:
+            logger.info("=== DÉBUT INITIALISATION MANUALMINER ===")
+            
+            # Vérifier la présence du fichier config.json
+            import os
+            config_path = "config.json"
+            if not os.path.exists(config_path):
+                logger.error(f"ERREUR: config.json non trouvé dans {os.getcwd()}")
+                return False
+            logger.info(f"✓ config.json trouvé: {config_path}")
+            
+            # Vérifier le contenu de config.json
+            try:
+                import json
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                logger.info("✓ config.json lu avec succès")
+                
+                # Vérifier les clés critiques
+                if 'google_cloud' in config and 'credentials_path' in config['google_cloud']:
+                    creds_path = config['google_cloud']['credentials_path']
+                    if os.path.exists(creds_path):
+                        logger.info(f"✓ Fichier credentials trouvé: {creds_path}")
+                    else:
+                        logger.error(f"✗ Fichier credentials MANQUANT: {creds_path}")
+                        return False
+                else:
+                    logger.error("✗ Configuration Google Cloud manquante")
+                    return False
+                    
+                if 'gemini' in config and 'api_key' in config['gemini']:
+                    api_key = config['gemini']['api_key']
+                    if api_key and not api_key.startswith('YOUR_'):
+                        logger.info("✓ Clé API Gemini configurée")
+                    else:
+                        logger.error("✗ Clé API Gemini manquante ou invalide")
+                        return False
+                else:
+                    logger.error("✗ Configuration Gemini manquante")
+                    return False
+                    
+            except Exception as e:
+                logger.error(f"✗ Erreur lecture config.json: {e}")
+                return False
+            
             # Initialiser le bucket Storage
             try:
                 self.storage_bucket = storage_client.bucket(BUCKET_NAME)
-                logger.info(f"Bucket connecté: {BUCKET_NAME}")
+                logger.info(f"✓ Bucket connecté: {BUCKET_NAME}")
             except Exception as e:
-                logger.error(f"Erreur bucket: {e}")
+                logger.error(f"✗ Erreur bucket: {e}")
                 
-            # Essayer d'initialiser l'analyseur
+            # Essayer d'initialiser l'analyseur avec logs détaillés
             try:
+                logger.info("--- Initialisation LabManualAnalyzer ---")
+                logger.info(f"Working directory: {os.getcwd()}")
+                logger.info(f"Files in working directory: {os.listdir('.')}")
+                
                 # Import conditionnel pour éviter les erreurs de démarrage
                 from lab_manual_analyzer_organized import LabManualAnalyzerStrict
+                logger.info("✓ Import LabManualAnalyzerStrict réussi")
+                
                 self.analyzer = LabManualAnalyzerStrict("config.json")
-                logger.info("LabManualAnalyzer initialisé")
+                logger.info("✓ LabManualAnalyzer initialisé avec succès")
+                
+                # Test rapide de l'analyseur
+                if hasattr(self.analyzer, 'doc_ai_client') and self.analyzer.doc_ai_client:
+                    logger.info("✓ Client Document AI initialisé")
+                else:
+                    logger.warning("⚠ Client Document AI non initialisé")
+                    
+                if hasattr(self.analyzer, 'gemini_model') and self.analyzer.gemini_model:
+                    logger.info("✓ Modèle Gemini initialisé")
+                else:
+                    logger.warning("⚠ Modèle Gemini non initialisé")
+                    
+            except ImportError as e:
+                logger.error(f"✗ Erreur import LabManualAnalyzer: {e}")
+                return False
             except Exception as e:
-                logger.warning(f"Analyseur non initialisé: {e}")
+                logger.error(f"✗ Erreur initialisation LabManualAnalyzer: {e}")
+                logger.error(f"Type d'erreur: {type(e).__name__}")
+                import traceback
+                logger.error(f"Traceback complet:\n{traceback.format_exc()}")
+                return False
                 
             # Essayer d'initialiser le générateur LaTeX  
             try:
+                logger.info("--- Initialisation LaTeX Generator ---")
                 from latex_generator import LatexSynthesisGenerator
+                logger.info("✓ Import LatexSynthesisGenerator réussi")
+                
                 self.latex_generator = LatexSynthesisGenerator()
-                logger.info("LaTeX Generator initialisé")
+                logger.info("✓ LaTeX Generator initialisé")
             except Exception as e:
-                logger.warning(f"LaTeX Generator non initialisé: {e}")
+                logger.warning(f"⚠ LaTeX Generator non initialisé: {e}")
                 
             self.initialized = True
+            logger.info("=== INITIALISATION MANUALMINER TERMINÉE AVEC SUCCÈS ===")
             return True
             
         except Exception as e:
-            logger.error(f"Erreur initialisation: {e}")
+            logger.error(f"✗ ERREUR CRITIQUE INITIALISATION: {e}")
+            import traceback
+            logger.error(f"Traceback complet:\n{traceback.format_exc()}")
             return False
 
 # Instance globale
@@ -118,7 +193,7 @@ def health_check():
 @app.route('/analyze', methods=['POST'])
 def analyze_pdf():
     """
-    Analyse d'un PDF médical - Endpoint principal
+    Analyse d'un PDF médical - Endpoint principal avec support multilingue
     """
     if 'file' not in request.files:
         return jsonify({"error": "Aucun fichier fourni"}), 400
@@ -129,6 +204,11 @@ def analyze_pdf():
     
     if not file.filename.lower().endswith('.pdf'):
         return jsonify({"error": "Le fichier doit être un PDF"}), 400
+    
+    # Récupérer la langue (par défaut français pour compatibilité)
+    language = request.form.get('language', 'fr')
+    if language not in ['fr', 'en']:
+        language = 'fr'  # fallback par défaut
     
     # CORRECTION CRITIQUE : Lire le fichier ICI avant le streaming
     try:
@@ -147,7 +227,7 @@ def analyze_pdf():
     
     if is_streaming:
         return Response(
-            stream_analysis_with_content(file_content, file_filename),
+            stream_analysis_with_content(file_content, file_filename, language),
             mimetype='text/event-stream',
             headers={
                 'Cache-Control': 'no-cache',
@@ -157,10 +237,10 @@ def analyze_pdf():
         )
     else:
         # Traitement synchrone pour compatibilité
-        return process_pdf_sync_with_content(file_content, file_filename)
+        return process_pdf_sync_with_content(file_content, file_filename, language)
 
-def stream_analysis_with_content(file_content, filename):
-    """Stream l'analyse en temps réel avec contenu pré-lu"""
+def stream_analysis_with_content(file_content, filename, language='fr'):
+    """Stream l'analyse en temps réel avec contenu pré-lu et support multilingue"""
     def send_log(level: str, message: str):
         timestamp = datetime.now().strftime("%H:%M:%S")
         log_data = json.dumps({
@@ -181,8 +261,20 @@ def stream_analysis_with_content(file_content, filename):
         # Vérifier que l'analyseur est disponible
         if not manualminer.analyzer:
             yield send_log("error", "Analyseur non disponible - vérifiez la configuration")
+            yield send_log("error", f"Statut initialisation: {manualminer.initialized}")
+            yield send_log("error", f"Analyzer object: {type(manualminer.analyzer) if manualminer.analyzer else 'None'}")
             yield f'data: {{"type":"error"}}\n\n'
             return
+        else:
+            yield send_log("info", f"✓ Analyseur disponible: {type(manualminer.analyzer)}")
+            
+            # Vérifier les attributs critiques de l'analyseur
+            if hasattr(manualminer.analyzer, 'doc_ai_client'):
+                yield send_log("info", f"Document AI client: {'OK' if manualminer.analyzer.doc_ai_client else 'MANQUANT'}")
+            if hasattr(manualminer.analyzer, 'gemini_model'):  
+                yield send_log("info", f"Gemini model: {'OK' if manualminer.analyzer.gemini_model else 'MANQUANT'}")
+            if hasattr(manualminer.analyzer, 'config'):
+                yield send_log("info", f"Configuration: {'OK' if manualminer.analyzer.config else 'MANQUANT'}")
             
         # Initialisation
         yield send_log("info", "DÉBUT ANALYSE MÉDICALE ManualMiner")
@@ -215,7 +307,7 @@ def stream_analysis_with_content(file_content, filename):
         yield send_log("info", "Lancement analyse médicale exhaustive...")
         
         try:
-            result = manualminer.analyzer.analyze_manual_organized(temp_pdf_path)
+            result = manualminer.analyzer.analyze_manual_organized(temp_pdf_path, language)
         except Exception as analysis_error:
             yield send_log("error", f"Erreur lors de l'analyse: {str(analysis_error)}")
             yield f'data: {{"type":"error"}}\n\n'
@@ -284,8 +376,8 @@ def stream_analysis_with_content(file_content, filename):
         except:
             pass
 
-def process_pdf_sync_with_content(file_content, filename):
-    """Traitement synchrone pour compatibilité"""
+def process_pdf_sync_with_content(file_content, filename, language='fr'):
+    """Traitement synchrone pour compatibilité avec support multilingue"""
     try:
         analysis_id = str(uuid.uuid4())
         
@@ -294,25 +386,8 @@ def process_pdf_sync_with_content(file_content, filename):
             "analysisId": analysis_id,
             "message": "Traitement initié - utilisez le streaming pour les logs en temps réel",
             "filename": filename,
-            "size": len(file_content)
-        })
-        
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-
-def process_pdf_sync_with_content(file_content, filename):
-    """Traitement synchrone pour compatibilité"""
-    try:
-        analysis_id = str(uuid.uuid4())
-        
-        return jsonify({
-            "success": True,
-            "analysisId": analysis_id,
-            "message": "Traitement initié - utilisez le streaming pour les logs en temps réel",
-            "filename": filename,
-            "size": len(file_content)
+            "size": len(file_content),
+            "language": language
         })
         
     except Exception as e:

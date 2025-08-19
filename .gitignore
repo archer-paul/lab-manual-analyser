@@ -107,14 +107,6 @@ Thumbs.db
 ehthumbs.db
 Icon?
 
-# Batch files and scripts (potentially containing sensitive info)
-*.bat
-deploy.ps1
-lancer_analyse.bat
-
-# PowerShell scripts that might contain credentials
-*.ps1
-
 # LaTeX temporary files
 *.aux
 *.log

@@ -1,0 +1,53 @@
+# Cloud Build ignore file - Override .gitignore for deployment
+# Include config.json and credentials/ for Cloud Run deployment
+
+# Node.js dependencies and build files
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+
+# Frontend source files (not needed on backend)
+src/
+public/
+index.html
+vite.config.ts
+tailwind.config.ts
+postcss.config.js
+tsconfig*.json
+components.json
+
+# Development files
+.git/
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Temporary files
+temp/
+manuels/
+*.tmp
+
+# Documentation and guides
+*.md
+LICENSE
+
+# Other build outputs
+*.exe
+*.deb
+*.rpm
+
+# BUT INCLUDE these essential files for deployment:
+# config.json - NEEDED for app configuration
+# credentials/ - NEEDED for Google Cloud authentication
+# *.py - NEEDED for Python backend
+# requirements.txt - NEEDED for pip install
+# Dockerfile - NEEDED for container build

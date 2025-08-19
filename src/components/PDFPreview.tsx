@@ -2,6 +2,7 @@ import { FileText, Download, X } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useTranslation } from 'react-i18next'
 
 interface PDFPreviewProps {
   isOpen: boolean
@@ -11,6 +12,7 @@ interface PDFPreviewProps {
 }
 
 export function PDFPreview({ isOpen, onClose, onDownload, fileName = "synthese_medicale.pdf" }: PDFPreviewProps) {
+  const { t } = useTranslation()
   // Simulation du contenu PDF
   const previewContent = [
     "SYNTHÈSE DU MANUEL D'UTILISATION",
@@ -54,7 +56,7 @@ export function PDFPreview({ isOpen, onClose, onDownload, fileName = "synthese_m
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5 text-primary" />
-              <span>Aperçu - {fileName}</span>
+              <span>{t('preview.title')} - {fileName}</span>
             </DialogTitle>
             <div className="flex space-x-2">
               <Button
@@ -62,7 +64,7 @@ export function PDFPreview({ isOpen, onClose, onDownload, fileName = "synthese_m
                 className="bg-gradient-primary hover:opacity-90"
               >
                 <Download className="w-4 h-4 mr-2" />
-                Télécharger
+                {t('preview.download')}
               </Button>
               <Button variant="ghost" size="sm" onClick={onClose}>
                 <X className="w-4 h-4" />

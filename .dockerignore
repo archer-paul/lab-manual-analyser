@@ -1,0 +1,19 @@
+# Docker build ignore file
+# Exclude everything first, then include what's needed
+
+# Exclude all by default
+*
+
+# But INCLUDE these essential files for the Python backend:
+!config.json
+!credentials/
+!credentials/**
+!*.py
+!requirements.txt
+!Dockerfile
+
+# Include any other necessary Python files
+!pdf_decryptor.py
+!lab_manual_analyzer_organized.py
+!latex_generator.py
+!app.py

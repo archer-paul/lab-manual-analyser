@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card'
 import { FileUploader } from '@/components/FileUploader'
 import { LogConsole } from '@/components/LogConsole'
 import { PDFPreview } from '@/components/PDFPreview'
+import LanguageToggle from '@/components/LanguageToggle'
+import { useTranslation } from 'react-i18next'
 
 interface LogEntry {
   timestamp: string
@@ -12,13 +14,14 @@ interface LogEntry {
 }
 
 const Index = () => {
+  const { t, i18n } = useTranslation()
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [synthesisId, setSynthesisId] = useState<string | null>(null)
   // URL de votre API Cloud Run
-  const backendUrl = 'https://manual-miner-yu36yzjzqq-ew.a.run.app'
+  const backendUrl = 'https://manual-miner-857985308573.europe-west1.run.app'
 
   const addLog = (level: LogEntry['level'], message: string) => {
     const timestamp = new Date().toLocaleTimeString()
@@ -34,6 +37,7 @@ const Index = () => {
       // Préparer le FormData pour l'upload
       const formData = new FormData()
       formData.append('file', file)
+      formData.append('language', i18n.language || 'en')
 
       // Démarrer l'analyse avec streaming vers le backend Python sur Cloud Run
       fetch(`${backendUrl}/analyze`, {
@@ -154,28 +158,31 @@ const Index = () => {
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
         <div className="container mx-auto px-6 py-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="p-3 bg-white/20 rounded-lg">
-              <img src="/icon_landing_page.png" alt="ManualMiner" className="w-8 h-8" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-3 bg-white/20 rounded-lg">
+                <img src="/icon_landing_page.png" alt="ManualMiner" className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">{t('header.title')}</h1>
+                <p className="text-blue-100">{t('header.subtitle')}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold">ManualMiner</h1>
-              <p className="text-blue-100">Automatisation de la synthèse des manuels d'appareils médicaux</p>
-            </div>
+            <LanguageToggle />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
             <div className="flex items-center space-x-3 text-blue-100">
               <FileText className="w-5 h-5" />
-              <span className="text-sm">De 200+ pages à 4-5 pages</span>
+              <span className="text-sm">{t('header.features.pages')}</span>
             </div>
             <div className="flex items-center space-x-3 text-blue-100">
               <Clock className="w-5 h-5" />
-              <span className="text-sm">Analyse automatisée avec IA</span>
+              <span className="text-sm">{t('header.features.analysis')}</span>
             </div>
             <div className="flex items-center space-x-3 text-blue-100">
               <Shield className="w-5 h-5" />
-              <span className="text-sm">Conforme aux standards médicaux</span>
+              <span className="text-sm">{t('header.features.compliance')}</span>
             </div>
           </div>
         </div>
@@ -188,11 +195,10 @@ const Index = () => {
           <div className="space-y-6">
             <Card className="p-6 bg-white shadow-md">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Téléchargement du manuel
+                {t('upload.title')}
               </h2>
               <p className="text-gray-600 mb-6">
-                Sélectionnez le manuel PDF de votre appareil médical pour générer automatiquement 
-                une synthèse concise et structurée avec ManualMiner.
+                {t('upload.description')}
               </p>
               <FileUploader 
                 onFileSelect={handleFileSelect}
@@ -203,20 +209,20 @@ const Index = () => {
             {logs.length > 0 && !isProcessing && (
               <Card className="p-6 bg-white shadow-md">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  Résultat de l'analyse
+                  {t('results.title')}
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
                     <div className="flex items-center space-x-2">
                       <FileText className="w-5 h-5 text-green-600" />
-                      <span className="text-green-700 font-medium">Synthèse générée par ManualMiner</span>
+                      <span className="text-green-700 font-medium">{t('results.synthesisReady')}</span>
                     </div>
                     <div className="text-sm text-green-600">
                       {selectedFile && `${selectedFile.name.replace('.pdf', '_SYNTHESE_MANUALMINER.pdf')}`}
                     </div>
                   </div>
                   <p className="text-sm text-gray-600">
-                    La synthèse de votre manuel est prête. Vous pouvez maintenant la prévisualiser ou la télécharger.
+                    {t('results.description')}
                   </p>
                 </div>
               </Card>
@@ -241,7 +247,7 @@ const Index = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="text-gray-500 text-sm">
-              © Paul Archer - ManualMiner, Hôpital Henri Mondor
+              {t('footer.copyright')}
             </div>
             <div className="flex items-center gap-4">
               <a 

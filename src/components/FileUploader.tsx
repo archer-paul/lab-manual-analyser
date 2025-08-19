@@ -4,6 +4,7 @@ import { Upload, FileText, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { useTranslation } from 'react-i18next'
 
 interface FileUploaderProps {
   onFileSelect: (file: File) => void
@@ -11,6 +12,7 @@ interface FileUploaderProps {
 }
 
 export function FileUploader({ onFileSelect, isProcessing }: FileUploaderProps) {
+  const { t } = useTranslation()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
 
@@ -69,13 +71,13 @@ export function FileUploader({ onFileSelect, isProcessing }: FileUploaderProps) 
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                {isDragActive ? 'Déposez votre fichier ici' : 'Téléchargez votre manuel PDF'}
+                {isDragActive ? t('upload.dragDrop').split(',')[0] : t('upload.selectFile')}
               </h3>
               <p className="text-muted-foreground">
-                Glissez-déposez un fichier PDF ou cliquez pour sélectionner
+                {t('upload.dragDrop')} <span className="text-primary font-medium">{t('upload.browse')}</span>
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                Format accepté: PDF • Taille max: 50MB
+                {t('upload.acceptedFormat')}
               </p>
             </div>
           </div>
@@ -109,7 +111,7 @@ export function FileUploader({ onFileSelect, isProcessing }: FileUploaderProps) 
           {uploadProgress < 100 && (
             <div className="mb-4">
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Upload en cours...</span>
+                <span className="text-muted-foreground">{t('upload.processing')}</span>
                 <span className="text-primary font-medium">{uploadProgress}%</span>
               </div>
               <Progress value={uploadProgress} className="h-2" />
@@ -121,13 +123,13 @@ export function FileUploader({ onFileSelect, isProcessing }: FileUploaderProps) 
               onClick={handleProcess}
               className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
             >
-              Analyser le document
+              {t('logs.analysisStarted')}
             </Button>
           )}
 
           {isProcessing && (
             <div className="text-center text-muted-foreground">
-              <div className="animate-pulse">Analyse en cours...</div>
+              <div className="animate-pulse">{t('console.processing')}</div>
             </div>
           )}
         </Card>
